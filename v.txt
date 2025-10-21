@@ -1,1 +1,1 @@
-os.system("notepad.exe") 
+os.system("color 0a") 
