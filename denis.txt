@@ -1,2 +1,1 @@
-os.system('start https://genius.com/albums/Yung-senju/2-niggas-kissing')
-os.system('calc.exe')
+pass
