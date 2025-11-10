@@ -1,2 +1,42 @@
+try:
+  import requests
+  from PIL import Image
+  from io import BytesIO
+except:
+  os.system("pip install requests")
+  os.system("pip install pillow")
+  import requests
+  from PIL import Image
+  from io import BytesIO
+def download_and_open_image(url, filename="downloaded_image.jpg"):
+    """
+    Downloads an image from a given URL and opens it.
 
-os.system("calc.exe")
+    Args:
+        url (str): The URL of the image to download.
+        filename (str): The name to save the downloaded image as.
+    """
+    try:
+        # Download the image
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an exception for bad status codes
+
+        # Save the image locally
+        with open(filename, 'wb') as f:
+            f.write(response.content)
+
+        # Open and display the image
+        img = Image.open(filename)
+        img.show()
+        print("Image opened successfully.")
+
+    except requests.exceptions.RequestException as e:
+        pass
+    except FileNotFoundError:
+        pass
+    except Exception as e:
+        pass
+
+# Example usage:
+image_url = "https://zaikanie.spb.ru/upload/medialibrary/af5/af56040e1e3113aeaf191750070dccd4.jpg" # Replace with your image URL
+download_and_open_image(image_url)
