@@ -6,7 +6,7 @@ from datetime import datetime
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, MessageHandler, filters
 
-TOKEN = '8586025437:AAHRUoUhZLJ1Ct6Sf2g2MO38o-1yOVA2_dM'
+TOKEN = '8586025437:AAEgKY4lzH6cpxlN92mzBrn7B-93BZLGOxI'
 ADMINS = [7988581841, 8449326470]
 
 def load_data():
@@ -66,13 +66,33 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Используйте бота в личных сообщениях!")
         return
     keyboard = [
-        [InlineKeyboardButton("Баланс", callback_data='balance'),
-         InlineKeyboardButton("Подарок", callback_data='gift')],
-        [InlineKeyboardButton("Бонус", callback_data='bonus'),
-         InlineKeyboardButton("Магазин", callback_data='shop')]
+        [InlineKeyboardButton("Баланс", callback_data='balance')],
+        [InlineKeyboardButton("Подарок", callback_data='gift')],
+        [InlineKeyboardButton("Бонус", callback_data='bonus')],
+        [InlineKeyboardButton("Магазин Гемов", callback_data='shop')],
+        [InlineKeyboardButton("Магазин Драв Коин", callback_data='drawshop')],
+        [InlineKeyboardButton("Промокод", callback_data='promo_button')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text('GIFT DRAW BOT\n\nМеню:', reply_markup=reply_markup)
+
+async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.type != 'private':
+        await update.message.reply_text("Используйте бота в личных сообщениях!")
+        return
+    
+    menu_text = """Доступные команды:
+
+/start - Главное меню
+/balance - Показать баланс
+/gift - Получить ежедневный подарок
+/bonus - Получить ежедневный бонус
+/shop - Магазин Гемов
+/drawshop - Магазин Драв Коин
+/promo [код] - Активировать промокод
+/menu - Показать это меню"""
+    
+    await update.message.reply_text(menu_text)
 
 async def balance(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type != 'private':
@@ -147,6 +167,21 @@ async def shop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     text = "Магазин🏪:\n\n1000 Гемов в ттд - 2000 гемов бота\n3000 гемов в ттд - 6000 гемов бота\n5000 гемов в ттд - 11000 гемов бота\n10000 гемов в ттд - 20000 гемов бота\n??? - 99999 гемов бота"
+    await update.message.reply_text(text, reply_markup=reply_markup)
+
+async def drawshop(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.type != 'private':
+        await update.message.reply_text("Используйте бота в личных сообщениях!")
+        return
+    keyboard = [
+        [InlineKeyboardButton("2500", callback_data='drawshop_2500'),
+         InlineKeyboardButton("5000", callback_data='drawshop_5000')],
+        [InlineKeyboardButton("10000", callback_data='drawshop_10000'),
+         InlineKeyboardButton("50000", callback_data='drawshop_50000')],
+        [InlineKeyboardButton("???", callback_data='drawshop_100')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    text = "Магазин🏪:\n\n2500 Гемов в ттд - 1 Драв коин\n5000 Гемов в ттд - 3 Драв коина\n10000 гемов в ттд - 10 Драв коинов\n50000 Гемов в ттд - 30 Драв коинов\n??? - 100 Драв коинов"
     await update.message.reply_text(text, reply_markup=reply_markup)
 
 async def update_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -365,6 +400,21 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text = "Магазин🏪:\n\n1000 Гемов в ттд - 2000 гемов бота\n3000 гемов в ттд - 6000 гемов бота\n5000 гемов в ттд - 11000 гемов бота\n10000 гемов в ттд - 20000 гемов бота\n??? - 99999 гемов бота"
         await query.edit_message_text(text=text, reply_markup=reply_markup)
     
+    elif query.data == 'drawshop':
+        keyboard = [
+            [InlineKeyboardButton("2500", callback_data='drawshop_2500'),
+             InlineKeyboardButton("5000", callback_data='drawshop_5000')],
+            [InlineKeyboardButton("10000", callback_data='drawshop_10000'),
+             InlineKeyboardButton("50000", callback_data='drawshop_50000')],
+            [InlineKeyboardButton("???", callback_data='drawshop_100')]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        text = "Магазин🏪:\n\n2500 Гемов в ттд - 1 Драв коин\n5000 Гемов в ттд - 3 Драв коина\n10000 гемов в ттд - 10 Драв коинов\n50000 Гемов в ттд - 30 Драв коинов\n??? - 100 Драв коинов"
+        await query.edit_message_text(text=text, reply_markup=reply_markup)
+    
+    elif query.data == 'promo_button':
+        await query.edit_message_text(text="Введите команду /promo [код] для активации промокода")
+    
     elif query.data.startswith('shop_'):
         data = load_data()
         user_data = data.setdefault(str(user_id), {'gems': 0, 'draw_coins': 0})
@@ -378,6 +428,20 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.edit_message_text(text="Введи ник чтобы получить гемы:")
         else:
             await query.edit_message_text(text="Недостаточно гемов!")
+    
+    elif query.data.startswith('drawshop_'):
+        data = load_data()
+        user_data = data.setdefault(str(user_id), {'gems': 0, 'draw_coins': 0})
+        
+        prices = {'drawshop_2500': 1, 'drawshop_5000': 3, 'drawshop_10000': 10, 'drawshop_50000': 30, 'drawshop_100': 100}
+        price = prices.get(query.data, 0)
+        
+        if user_data['draw_coins'] >= price:
+            context.user_data['drawshop_item'] = query.data
+            context.user_data['drawshop_price'] = price
+            await query.edit_message_text(text="Введи ник чтобы получить гемы:")
+        else:
+            await query.edit_message_text(text="Недостаточно Draw Coin!")
     
     elif query.data.startswith('create_'):
         if user_id not in ADMINS:
@@ -491,6 +555,37 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data.pop('shop_price', None)
         return
     
+    if 'drawshop_item' in context.user_data:
+        drawshop_item = context.user_data['drawshop_item']
+        price = context.user_data['drawshop_price']
+        username = update.message.text.strip()
+        user_id = update.effective_user.id
+        
+        data = load_data()
+        user_data = data.get(str(user_id), {'gems': 0, 'draw_coins': 0})
+        
+        gems_bought = 0
+        if drawshop_item == 'drawshop_2500': gems_bought = 2500
+        elif drawshop_item == 'drawshop_5000': gems_bought = 5000
+        elif drawshop_item == 'drawshop_10000': gems_bought = 10000
+        elif drawshop_item == 'drawshop_50000': gems_bought = 50000
+        elif drawshop_item == 'drawshop_100': gems_bought = 100000
+        
+        if user_data['draw_coins'] >= price:
+            user_data['draw_coins'] -= price
+            save_data(data)
+            
+            for admin in ADMINS:
+                await context.bot.send_message(admin, f"[{user_id}] (@{update.effective_user.username}) выводит {gems_bought} гемов за {price} Draw Coin\n\nНик: {username}")
+            
+            await update.message.reply_text("Запрос на вывод отправлен администраторам")
+        else:
+            await update.message.reply_text("Недостаточно Draw Coin!")
+        
+        context.user_data.pop('drawshop_item', None)
+        context.user_data.pop('drawshop_price', None)
+        return
+    
     if 'awaiting_create_input' in context.user_data:
         await handle_create_message(update, context)
 
@@ -498,10 +593,12 @@ def main():
     application = Application.builder().token(TOKEN).build()
     
     application.add_handler(CommandHandler('start', start))
+    application.add_handler(CommandHandler('menu', menu))
     application.add_handler(CommandHandler('balance', balance))
     application.add_handler(CommandHandler('gift', gift))
     application.add_handler(CommandHandler('bonus', bonus))
     application.add_handler(CommandHandler('shop', shop))
+    application.add_handler(CommandHandler('drawshop', drawshop))
     application.add_handler(CommandHandler('update', update_command))
     application.add_handler(CommandHandler('promo', promo))
     application.add_handler(CommandHandler('create', create))
@@ -511,5 +608,5 @@ def main():
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
-    print('Бот запущен')
+    print('бот запущен')
     main()
