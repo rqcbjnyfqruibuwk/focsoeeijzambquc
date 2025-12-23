@@ -1,3 +1,4 @@
+print('Бот запущен.')
 import json
 import time
 import random
